@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Blockplain Voting System</title>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 40px;
+    }
+    .region {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+    .vote-options {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🗳️ Blockplain Voting System</h1>
+
+  <div id="regions-container"></div>
+
+  <button onclick="addRegion()">➕ Add Region</button>
+
+  <script>
+    let regionCount = 0;
+
+    function addRegion() {
+      regionCount++;
+      const regionDiv = document.createElement("div");
+      regionDiv.className = "region";
+      regionDiv.id = `region-${regionCount}`;
+
+      regionDiv.innerHTML = `
+        <label>Region Name: <input type="text" id="region-name-${regionCount}" /></label><br/>
+        <div class="vote-options">
+          <label><input type="radio" name="vote-${regionCount}" value="A"> Vote A</label>
+          <label><input type="radio" name="vote-${regionCount}" value="B"> Vote B</label>
+        </div>
+        <button onclick="submitVote(${regionCount})">Submit Vote</button>
+        <p id="result-${regionCount}"></p>
+      `;
+
+      document.getElementById("regions-container").appendChild(regionDiv);
+    }
+
+    async function submitVote(regionId) {
+      const regionName = document.getElementById(`region-name-${regionId}`).value;
+      const voteOption = document.querySelector(`input[name="vote-${regionId}"]:checked`);
+      
+      if (!regionName || !voteOption) {
+        alert("Please enter region name and select a vote.");
+        return;
+      }
+
+      const vote = voteOption.value;
+
+      const response = await fetch("http://localhost:8080/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ region: regionName, choice: vote })
+      });
+
+      const result = await response.json();
+      document.getElementById(`result-${regionId}`).textContent = result.message || "Vote submitted.";
+    }
+  </script>
+
+</body>
+</html>
