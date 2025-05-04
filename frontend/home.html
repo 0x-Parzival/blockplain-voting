@@ -1,20 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blockplain Voting System</title>
   <style>
+    /* Global Styles */
     body {
-      font-family: Arial;
-      margin: 40px;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1a1a1a; /* Black background */
+      color: #00ffcc; /* Neon text color */
+      line-height: 1.6;
+      font-size: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
     }
+
+    h1 {
+      color: #00ffcc;
+      text-align: center;
+      margin-top: 50px;
+      font-size: 3rem;
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.7), 0 0 20px rgba(0, 255, 204, 0.7);
+    }
+
+    h3 {
+      color: #ff00ff;
+      font-size: 2rem;
+      margin-top: 40px;
+      text-shadow: 0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(255, 0, 255, 0.7);
+    }
+
+    /* Container for Regions */
     .region {
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
+      background-color: #262626;
+      border: 1px solid #00ffcc;
+      padding: 20px;
+      margin: 15px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
     }
-    .vote-options {
-      margin-top: 10px;
+
+    .vote-options label {
+      margin-right: 20px;
+      color: #ff00ff;
+      font-size: 1.2rem;
+      text-shadow: 0 0 5px rgba(255, 0, 255, 0.7);
+    }
+
+    .vote-options input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    button {
+      background-color: #00ffcc;
+      color: #1a1a1a;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
+    }
+
+    button:hover {
+      background-color: #ff00ff;
+      box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+    }
+
+    /* Results Section */
+    #overall-results, #region-results {
+      background-color: #262626;
+      padding: 15px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 600px;
+      margin-top: 20px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+    }
+
+    #overall-results p, #region-results p {
+      font-size: 1.2rem;
+      color: #ff00ff;
+      text-shadow: 0 0 5px rgba(255, 0, 255, 0.7);
+    }
+
+    #regions-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    /* Add Region Button */
+    .add-region-btn {
+      background-color: #ff00ff;
+      color: #1a1a1a;
+      padding: 15px 30px;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+    }
+
+    .add-region-btn:hover {
+      background-color: #00ffcc;
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.7);
+    }
+
+    /* Responsive Design */
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .region {
+        width: 90%;
+      }
+
+      .add-region-btn {
+        font-size: 1.2rem;
+        padding: 12px 25px;
+      }
+
+      #overall-results, #region-results {
+        width: 90%;
+      }
     }
   </style>
 </head>
@@ -24,7 +147,17 @@
 
   <div id="regions-container"></div>
 
-  <button onclick="addRegion()">➕ Add Region</button>
+  <button class="add-region-btn" onclick="addRegion()">➕ Add Region</button>
+
+  <h3>Overall Voting Results</h3>
+  <div id="overall-results">
+    <p>Loading...</p>
+  </div>
+
+  <h3>Results per Region</h3>
+  <div id="region-results">
+    <p>Loading...</p>
+  </div>
 
   <script>
     let regionCount = 0;
@@ -67,7 +200,37 @@
 
       const result = await response.json();
       document.getElementById(`result-${regionId}`).textContent = result.message || "Vote submitted.";
+
+      // After submitting, refresh the results
+      fetchResults();
     }
+
+    // Fetch the overall and per-region results
+    async function fetchResults() {
+      const response = await fetch("http://localhost:8080/results", { method: "GET" });
+      const results = await response.json();
+
+      // Display the overall results
+      const overallResults = `
+        Total A votes: ${results.overall.A} <br>
+        Total B votes: ${results.overall.B}
+      `;
+      document.getElementById("overall-results").innerHTML = overallResults;
+
+      // Display results per region
+      let regionResults = '';
+      for (const region in results) {
+        if (region !== "overall") {
+          regionResults += `
+            <p>${region}: A votes - ${results[region].A}, B votes - ${results[region].B}</p>
+          `;
+        }
+      }
+      document.getElementById("region-results").innerHTML = regionResults;
+    }
+
+    // Initial fetch to display results on page load
+    fetchResults();
   </script>
 
 </body>
