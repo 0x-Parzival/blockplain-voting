@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blockplain Voting System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: space-between;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-color: #222;
+      color: #fff;
+    }
+    #left-panel, #right-panel {
+      width: 45%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #left-panel {
+      border-right: 2px solid #444;
+    }
+    h1 {
+      text-align: center;
+      color: #00FF00;
+    }
+    .region {
+      border: 1px solid #00FF00;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      background-color: #333;
+    }
+    .vote-options {
+      margin-top: 10px;
+    }
+    .block-counter {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #444;
+      text-align: center;
+    }
+    .live-demo {
+      margin-top: 20px;
+      height: 200px;
+      border: 1px solid #00FF00;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column-reverse;
+    }
+    .block {
+      height: 30px;
+      width: 50px;
+      margin-bottom: 5px;
+      display: inline-block;
+      text-align: center;
+      line-height: 30px;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+    .block-A {
+      background-color: #ff5733;
+    }
+    .block-B {
+      background-color: #33aaff;
+    }
+    .add-region-btn {
+      background-color: #00FF00;
+      color: #000;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .submit-btn {
+      background-color: #ff9800;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Left Panel -->
+  <div id="left-panel">
+    <h1>Voting System</h1>
+    <div id="regions-container"></div>
+    <button class="add-region-btn" onclick="addRegion()">➕ Add Region</button>
+  </div>
+
+  <!-- Right Panel -->
+  <div id="right-panel">
+    <h1>Block Counter</h1>
+    <div class="block-counter">
+      <p><strong>Total Submits:</strong> <span id="total-submit-count">0</span></p>
+      <div class="live-demo" id="live-demo"></div>
+    </div>
+  </div>
+
+  <script>
+    let regionCount = 0;
+    let submitCount = 0;
+
+    function addRegion() {
+      regionCount++;
+      const regionDiv = document.createElement("div");
+      regionDiv.className = "region";
+      regionDiv.id = `region-${regionCount}`;
+
+      regionDiv.innerHTML = `
+        <label>Region Name: <input type="text" id="region-name-${regionCount}" /></label><br/>
+        <div class="vote-options">
+          <label><input type="radio" name="vote-${regionCount}" value="A"> Vote A</label>
+          <label><input type="radio" name="vote-${regionCount}" value="B"> Vote B</label>
+        </div>
+        <button class="submit-btn" onclick="submitVote(${regionCount})">Submit Vote</button>
+        <p id="result-${regionCount}"></p>
+      `;
+
+      document.getElementById("regions-container").appendChild(regionDiv);
+    }
+
+    async function submitVote(regionId) {
+      const regionName = document.getElementById(`region-name-${regionId}`).value;
+      const voteOption = document.querySelector(`input[name="vote-${regionId}"]:checked`);
+      
+      if (!regionName || !voteOption) {
+        alert("Please enter region name and select a vote.");
+        return;
+      }
+
+      const vote = voteOption.value;
+
+      // Update submit count
+      submitCount++;
+      document.getElementById("total-submit-count").textContent = submitCount;
+
+      // Add block to live view
+      const liveDemo = document.getElementById("live-demo");
+      const newBlock = document.createElement("div");
+      newBlock.classList.add("block");
+      newBlock.classList.add(vote === "A" ? "block-A" : "block-B");
+      newBlock.textContent = `${vote} - ${regionName}`;
+      liveDemo.appendChild(newBlock);
+
+      // Send to backend
+      await fetch('/save-block', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vote, regionName })
+      });
+
+      // Show confirmation
+      document.getElementById(`result-${regionId}`).textContent = `Vote for ${regionName}: ${vote} submitted.`;
+    }
+  </script>
+</body>
+</html>
