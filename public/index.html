@@ -43,19 +43,19 @@
       background-color: #444;
       text-align: center;
     }
-    .live-demo {
-      margin-top: 20px;
+    .live-demo, .hex-codes {
+      margin-top: 10px;
       height: 200px;
       border: 1px solid #00FF00;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
       display: flex;
       flex-direction: column-reverse;
+      gap: 5px;
     }
-    .block {
+    .block, .hex-block {
       height: 30px;
       width: 50px;
-      margin-bottom: 5px;
       display: inline-block;
       text-align: center;
       line-height: 30px;
@@ -68,6 +68,10 @@
     }
     .block-B {
       background-color: #33aaff;
+    }
+    .hex-block {
+      background-color: #000;
+      color: #00FF00;
     }
     .add-region-btn {
       background-color: #00FF00;
@@ -101,7 +105,10 @@
     <h1>Block Counter</h1>
     <div class="block-counter">
       <p><strong>Total Submits:</strong> <span id="total-submit-count">0</span></p>
+
       <div class="live-demo" id="live-demo"></div>
+      <h3 style="margin-top: 10px;">Hex Codes</h3>
+      <div class="hex-codes" id="hex-codes"></div>
     </div>
   </div>
 
@@ -138,18 +145,29 @@
       }
 
       const vote = voteOption.value;
+      const colorMap = {
+        A: '#ff5733',
+        B: '#33aaff'
+      };
+      const hexCode = colorMap[vote];
 
       // Update submit count
       submitCount++;
       document.getElementById("total-submit-count").textContent = submitCount;
 
-      // Add block to live view
+      // Add block
       const liveDemo = document.getElementById("live-demo");
       const newBlock = document.createElement("div");
-      newBlock.classList.add("block");
-      newBlock.classList.add(vote === "A" ? "block-A" : "block-B");
-      newBlock.textContent = `${vote} - ${regionName}`;
+      newBlock.classList.add("block", vote === "A" ? "block-A" : "block-B");
+      newBlock.textContent = vote;
       liveDemo.appendChild(newBlock);
+
+      // Add hex code block at same position
+      const hexCodes = document.getElementById("hex-codes");
+      const hexBlock = document.createElement("div");
+      hexBlock.classList.add("hex-block");
+      hexBlock.textContent = hexCode;
+      hexCodes.appendChild(hexBlock);
 
       // Send to backend
       await fetch('/save-block', {
@@ -158,7 +176,6 @@
         body: JSON.stringify({ vote, regionName })
       });
 
-      // Show confirmation
       document.getElementById(`result-${regionId}`).textContent = `Vote for ${regionName}: ${vote} submitted.`;
     }
   </script>

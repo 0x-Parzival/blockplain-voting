@@ -1,0 +1,2 @@
+Region: 123, Vote: A, Hex: #ff5733
+Region: 123, Vote: B, Hex: #33aaff

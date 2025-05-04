@@ -1,0 +1,16 @@
+{
+  "name": "blockplain-voting",
+  "version": "1.0.0",
+  "description": "A futuristic, interactive web-based voting system inspired by blockchain visualization. This project demonstrates how user interactions (like voting or adding a region) are visualized as \"blocks\" within a dynamic \"blockplain\" — mimicking blockchain structure in a visually intuitive way.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
